@@ -1,12 +1,15 @@
 const router = require('express').Router();
+const {CategoryModel, CollectionModel} = require('../models');
+const { UniqueConstraintError } = require("sequelize/lib/errors")
 const {validateSession} = require('../middleware');
-const {CategoryModel} = require('../models');
-const Category = require('../models/category');
+
 
 //Working! - might not need any validation? add user so guests can't access?
 router.get('/', async (req,res) => {
     try {
-        const allCategories = await CategoryModel.findAll();
+        const allCategories = await CategoryModel.findAll({
+            include: CollectionModel
+        });
 
         res.status(200).json(allCategories);
     } catch(err) {
@@ -29,31 +32,37 @@ router.post('/new', async (req, res) => {
             Category
         })
     } catch(err) {
-        res.status(500).json({
-            message: "Failed to create category",
-            error: err
-        })
+        if (err instanceof UniqueConstraintError) {
+            res.status(409).json({
+                message: "Category already exists"
+            })
+        } else {
+            res.status(500).json({
+                message: "Failed to create category",
+                error: err
+            })
+        }
     }
 })
 
 //Working! - needs Admin Validation
-router.put('/edit-:categoryID', async (req, res) => {
+router.put('/edit-:categoryId', async (req, res) => {
     const {name} = req.body;
-    const {categoryID} = req.params;
+    const {categoryId} = req.params;
 
     const query = {
         where: {
-            id: categoryID
+            id: categoryId
         }
     };
 
-    const changedCategory = name;
+    const updatedCategory = name;
 
     try {
-        const update = await CategoryModel.update(changedCategory, query);
+        const update = await CategoryModel.update(updatedCategory, query);
         res.status(200).json({
             message: "Category successfully updated",
-            newName: changedCategory})
+            newName: updatedCategory})
     } catch(err) {
         res.status(500).json({
             message: "Unable to update category"
@@ -62,18 +71,22 @@ router.put('/edit-:categoryID', async (req, res) => {
 })
 
 //Working! - needs Admin Validation
-router.delete('/delete-:categoryID', async (req, res) => {
-    const {categoryID} = req.params;
+router.delete('/delete-:categoryId', async (req, res) => {
+    const {categoryId} = req.params;
 
     try {
         const query = {
             where: {
-                id: categoryID
+                id: categoryId
             }
         };
 
-        await CategoryModel.destroy(query);
-        res.status(200).json({message: `Successfully deleted category`});
+        let rowsDestroyed = await CategoryModel.destroy(query);
+        if (rowsDestroyed >= 1) {
+            res.status(200).json({message: `Successfully deleted category`});
+        } else {
+            res.status(404).json({message: "No category to delete"})
+        }
     } catch(err) {
         res.status(500).json({error: err})
     }

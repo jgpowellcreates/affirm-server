@@ -33,7 +33,7 @@ const User = db.define("user", {
     lName: {
         type: DataTypes.STRING,
         allowNull: false
-    }
+    },
 });
 
 module.exports = User;

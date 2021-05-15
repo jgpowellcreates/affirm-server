@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {UserModel} = require('../models');
+const {UserModel, RoleModel} = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 const {UniqueConstraintError} = require('sequelize/lib/errors');
@@ -16,7 +16,8 @@ router.post('/register', async (req, res) => {
             email,
             password: bcrypt.hashSync(password, 10),
             fName,
-            lName
+            lName,
+            roleId: process.env.USER_ROLE
         });
         console.log("newUser finished");
         const token = jwt.sign({id: newUser.id}, process.env.JWT_SECRET, {expiresIn: 60 * 60 * 24});

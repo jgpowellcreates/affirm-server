@@ -15,10 +15,11 @@ router.get('/', async (req, res) => {
 
 //Viewing a single collection's contents
 router.get('/:collectionId', async (req, res) => {
+    const {collectionId} = req.params;
     try {
         const collection = await CollectionModel.findOne({
             where: {
-                collectionId: req.params.collectionId,
+                id: collectionId,
             }
         });
         res.status(200).json(collection);

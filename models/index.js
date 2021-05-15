@@ -25,7 +25,7 @@ CategoryModel.hasMany(CollectionModel, {allowNull: false});
 CollectionModel.belongsTo(CategoryModel, {allowNull: false});
 
 CollectionModel.hasMany(AffirmationModel, {allowNull: false});
-AffirmationModel.belongsTo(CollectionModel, {allowNull: false});
+AffirmationModel.belongsTo(CollectionModel, {allowNull: true});
 
 UserCollectionModel.hasMany(AffirmationModel, {allowNull: false});
-AffirmationModel.belongsTo(UserCollectionModel, {allowNull: false});
+AffirmationModel.belongsTo(UserCollectionModel, {allowNull: true});

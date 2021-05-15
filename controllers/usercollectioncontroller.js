@@ -23,15 +23,17 @@ router.get('/', validateSession, async (req, res) => {
             },
             include: AffirmationModel
         });
-        res.status(200).json(userCollection);
+        res.status(200).json({userCollection});
     } catch(err) {
         res.status(500).json({error: err})
     }
 });
 
+//Create a new user collection
 router.post('/new', validateSession, async (req, res) => {
-    const {title, description, ownerRole} = req.body;
+    const {title, description} = req.body;
     const userId = req.user.id;
+    const ownerRole = req.user.roleId;
 
     try{
         const newUserCollection = await UserCollectionModel.create({
@@ -43,7 +45,7 @@ router.post('/new', validateSession, async (req, res) => {
 
         res.status(201).json({
             message: "New Collection Created!",
-            newUserCollection
+            newUserCollection,
         })
     } catch(err) {
         res.status(500).json({
@@ -53,7 +55,7 @@ router.post('/new', validateSession, async (req, res) => {
     }
 })
 
-
+//Edit a user collection (Name, Description)
 router.put('/edit-:userCollectionId', validateSession, async (req, res) => {
     const {title, description} = req.body;
     const {userCollectionId} = req.params;
@@ -84,6 +86,7 @@ router.put('/edit-:userCollectionId', validateSession, async (req, res) => {
     }
 });
 
+//Delete a user collection
 router.delete('/delete-:userCollectionId', validateSession, async (req,res) => {
     const {userCollectionId} = req.params;
     const userId = req.user.id;

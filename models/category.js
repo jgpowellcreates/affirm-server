@@ -9,7 +9,7 @@ const Category = db.define("category", {
     }
 },
 {
-    tableName: 'Categories'
+    tableName: 'categories'
 }
 );
 

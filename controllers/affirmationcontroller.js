@@ -46,7 +46,7 @@ router.get('/collection-:userCollectionId', async (req, res) => {
 
 router.post('/new', validateSession, async (req, res) => {
     const {statement, collectionId, userCollectionId} = req.body;
-    const ownerRole = req.user.roleId;
+    const {ownerRole} = req.user.roleId;
 
     console.log(statement, collectionId, userCollectionId, ownerRole);
     try {

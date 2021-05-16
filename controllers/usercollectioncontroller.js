@@ -5,7 +5,7 @@ const {validateSession} = require('../middleware');
 //This endpoint for developer. All collections should be returned under categories.
 router.get('/all', async (req, res) => {
     try {
-        const userCollections = await UserCollectionModel.findAll();
+        const userCollections = await UserCollectionModel.findAll({include: AffirmationModel});
         res.status(200).json(userCollections);
     } catch(err) {
         res.status(500).json({error: err})

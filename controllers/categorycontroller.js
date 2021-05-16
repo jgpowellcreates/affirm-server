@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {CategoryModel, CollectionModel} = require('../models');
+const {CategoryModel, CollectionModel, AffirmationModel} = require('../models');
 const { UniqueConstraintError } = require("sequelize/lib/errors")
 const {validateSession} = require('../middleware');
 
@@ -8,7 +8,12 @@ const {validateSession} = require('../middleware');
 router.get('/', async (req,res) => {
     try {
         const allCategories = await CategoryModel.findAll({
-            include: CollectionModel
+            include: {
+                model: CollectionModel,
+                include: {
+                    model: AffirmationModel
+                }
+            }
         });
 
         res.status(200).json(allCategories);
@@ -56,13 +61,19 @@ router.put('/edit-:categoryId', async (req, res) => {
         }
     };
 
-    const updatedCategory = name;
+    const updatedCategory = {name};
 
+    console.log(name, categoryId, query, updatedCategory)
     try {
         const update = await CategoryModel.update(updatedCategory, query);
-        res.status(200).json({
-            message: "Category successfully updated",
-            newName: updatedCategory})
+        if (update >= 1) {
+            res.status(200).json({
+                message: "Category successfully updated",
+                newName: updatedCategory,
+                updatedRows: update})
+        } else {
+            res.status(404).json({message: "No category to update"})
+        }
     } catch(err) {
         res.status(500).json({
             message: "Unable to update category"

@@ -25,33 +25,38 @@ router.get('/', async (req,res) => {
 })
 
 //Working! - needs Admin Validation
-router.post('/new', async (req, res) => {
+router.post('/new', validateSession, async (req, res) => {
     const {name} = req.body;
-    try {
-        const Category = await CategoryModel.create({
-            name
-        })
 
-        res.status(201).json({
-            message: `Category '${name}' successfully created`,
-            Category
-        })
-    } catch(err) {
-        if (err instanceof UniqueConstraintError) {
-            res.status(409).json({
-                message: "Category already exists"
+    if(req.user.roleId == process.env.ADMIN_ROLE) {
+        try {
+            const Category = await CategoryModel.create({
+                name
             })
-        } else {
-            res.status(500).json({
-                message: "Failed to create category",
-                error: err
+    
+            res.status(201).json({
+                message: `Category '${name}' successfully created`,
+                Category
             })
+        } catch(err) {
+            if (err instanceof UniqueConstraintError) {
+                res.status(409).json({
+                    message: "Category already exists"
+                })
+            } else {
+                res.status(500).json({
+                    message: "Failed to create category",
+                    error: err
+                })
+            }
         }
+    } else {
+        res.status(401).json({message: "Not authorized."});
     }
 })
 
 //Working! - needs Admin Validation
-router.put('/edit-:categoryId', async (req, res) => {
+router.put('/edit-:categoryId', validateSession, async (req, res) => {
     const {name} = req.body;
     const {categoryId} = req.params;
 
@@ -63,43 +68,50 @@ router.put('/edit-:categoryId', async (req, res) => {
 
     const updatedCategory = {name};
 
-    console.log(name, categoryId, query, updatedCategory)
-    try {
-        const update = await CategoryModel.update(updatedCategory, query);
-        if (update >= 1) {
-            res.status(200).json({
-                message: "Category successfully updated",
-                newName: updatedCategory,
-                updatedRows: update})
-        } else {
-            res.status(404).json({message: "No category to update"})
+    if(req.user.roleId == process.env.ADMIN_ROLE) {
+        try {
+            const update = await CategoryModel.update(updatedCategory, query);
+            if (update >= 1) {
+                res.status(200).json({
+                    message: "Category successfully updated",
+                    newName: updatedCategory,
+                    updatedRows: update})
+            } else {
+                res.status(404).json({message: "No category to update"})
+            }
+        } catch(err) {
+            res.status(500).json({
+                message: "Unable to update category"
+            })
         }
-    } catch(err) {
-        res.status(500).json({
-            message: "Unable to update category"
-        })
+    } else {
+        res.status(401).json({message: "Not authorized"})
     }
 })
 
 //Working! - needs Admin Validation
-router.delete('/delete-:categoryId', async (req, res) => {
+router.delete('/delete-:categoryId', validateSession, async (req, res) => {
     const {categoryId} = req.params;
 
-    try {
-        const query = {
-            where: {
-                id: categoryId
-            }
-        };
+    if(req.user.roleId == process.env.ADMIN_ROLE) {
+        try {
+            const query = {
+                where: {
+                    id: categoryId
+                }
+            };
 
-        let rowsDestroyed = await CategoryModel.destroy(query);
-        if (rowsDestroyed >= 1) {
-            res.status(200).json({message: `Successfully deleted category`});
-        } else {
-            res.status(404).json({message: "No category to delete"})
+            let rowsDestroyed = await CategoryModel.destroy(query);
+            if (rowsDestroyed >= 1) {
+                res.status(200).json({message: `Successfully deleted category`});
+            } else {
+                res.status(404).json({message: "No category to delete"})
+            }
+        } catch(err) {
+            res.status(500).json({error: err})
         }
-    } catch(err) {
-        res.status(500).json({error: err})
+    } else {
+        res.status(401).json({message: "Not authorized."});
     }
 })
 

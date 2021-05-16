@@ -44,6 +44,8 @@ router.get('/collection-:userCollectionId', async (req, res) => {
     }
 })
 
+//Creates a new affirmation statement
+//...already takes in ownerRole & collection info. Need more validation?
 router.post('/new', validateSession, async (req, res) => {
     const {statement, collectionId, userCollectionId} = req.body;
     const {ownerRole} = req.user.roleId;
@@ -68,6 +70,8 @@ router.post('/new', validateSession, async (req, res) => {
     };
 });
 
+//Edit an existing affirmation statement
+//Create validation - belongs to User, matches ownerRole
 router.put('/edit-:affirmationId', validateSession, async (req,res) => {
     const {statement} = req.body;
     const {affirmationId} = req.params;
@@ -82,6 +86,7 @@ router.put('/edit-:affirmationId', validateSession, async (req,res) => {
         statement
     }
 
+    console.log(query)
     try {
         const update = await AffirmationModel.update(udpatedStatement,query);
         res.status(200).json({
@@ -93,6 +98,8 @@ router.put('/edit-:affirmationId', validateSession, async (req,res) => {
     }
 })
 
+//Delete's an affirmation
+//Create validation - belongs to User, matches ownerRole
 router.delete('/delete-:affirmationId', validateSession, async (req, res) => {
     const {affirmationId} = req.params;
 

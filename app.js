@@ -1,7 +1,13 @@
+require("dotenv").config();
 const Express = require('express');
 const app = Express();
 const controllers = require('./controllers');
+const dbConnection = require('./db');
+const middlewares = require('./middleware');
+const validateJWT = require('./middleware/validate-session');
 
+app.use(middlewares.CORS);
+app.use(Express.json());
 
 app.use('/auth', controllers.userController);
 app.use('/role', controllers.rolesController);
@@ -10,6 +16,13 @@ app.use('/collection', controllers.collectionController);
 app.use('/affs', controllers.affirmationController);
 app.use('/mycollections', controllers.userCollectionController);
 
-app.listen(3000, () => {
-    console.log(`[Server]: App is listening on 3000`);
-});
+dbConnection.authenticate()
+    .then(() => dbConnection.sync())
+    .then(() => {
+        app.listen(3000, () => {
+            console.log(`[Server]: App is listening on 3000`);
+        });
+    })
+    .catch((err) => {
+        console.log(`[Server]: Server crashed due to ${err}`)
+    });

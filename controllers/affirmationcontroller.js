@@ -48,18 +48,16 @@ router.get('/collection-:userCollectionId', async (req, res) => {
 //...already takes in ownerRole & collection info. Need more validation?
 router.post('/new', validateSession, async (req, res) => {
     const {statement, collectionId, userCollectionId} = req.body;
-    const {ownerRole} = req.user.roleId;
+    const creatorRole = req.user.roleId;
 
-    console.log(statement, collectionId, userCollectionId, ownerRole);
+    console.log(statement, collectionId, userCollectionId, creatorRole);
     try {
-        console.log("Trying...")
         const affirmation = await AffirmationModel.create({
             statement,
-            ownerRole,
+            ownerRole: creatorRole,
             collectionId,
             userCollectionId
         })
-        console.log("Made it past affirmation")
 
         res.status(201).json(affirmation)
     } catch(err) {
@@ -71,7 +69,6 @@ router.post('/new', validateSession, async (req, res) => {
 });
 
 //Edit an existing affirmation statement
-//Create validation - belongs to User, matches ownerRole
 router.put('/edit-:affirmationId', validateSession, async (req,res) => {
     const {statement} = req.body;
     const {affirmationId} = req.params;
@@ -82,13 +79,24 @@ router.put('/edit-:affirmationId', validateSession, async (req,res) => {
         }
     }
 
-    const udpatedStatement = {
-        statement
-    }
+    const udpatedStatement = {statement}
 
-    console.log(query)
     try {
-        const update = await AffirmationModel.update(udpatedStatement,query);
+        const update = await AffirmationModel.findOne({
+            where: {
+                id: affirmationId
+            }
+        });
+
+        if (req.user.roleId >= update.ownerRole) {
+
+            update.statement = udpatedStatement.statement;
+            await update.save();
+        } else {
+            res.status(401).json({message: "Not authorized."});
+        }
+
+        console.log(update)
         res.status(200).json({
             message: "Affirmation successfully updated",
             udpatedStatement
@@ -98,25 +106,28 @@ router.put('/edit-:affirmationId', validateSession, async (req,res) => {
     }
 })
 
-//Delete's an affirmation
-//Create validation - belongs to User, matches ownerRole
+//DELETE TEST
 router.delete('/delete-:affirmationId', validateSession, async (req, res) => {
     const {affirmationId} = req.params;
 
     try {
-        const query = {
+        const affToDelete = await AffirmationModel.findOne({
             where: {
                 id: affirmationId
             }
-        };
+        });
 
-        let rowsDestroyed = await AffirmationModel.destroy(query);
-        if (rowsDestroyed >= 1) {
-            res.status(200).json({message: `Successfully deleted affirmation`});
+        if (req.user.roleId >= affToDelete.ownerRole){
+            if (affToDelete) {
+                affToDelete.destroy();
+                res.status(200).json({message: `Successfully deleted affirmation`});
+            } else {
+                res.status(404).json({message: "No affirmation to delete"})
+            }
         } else {
-            res.status(404).json({message: "No affirmation to delete"})
+            res.status(401).json({message: "Not authorized."});
         }
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({error: err})
     }
 })

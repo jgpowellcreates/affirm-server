@@ -75,10 +75,14 @@ router.put('/edit-:userCollectionId', validateSession, async (req, res) => {
 
     try {
         const update = await UserCollectionModel.update(updatedUserCollection, query);
-        res.status(200).json({
-            message: "Collection successfully updated",
-            collectionInfo: updatedUserCollection
-        });
+        if(update >= 1) {
+            res.status(200).json({
+                message: "Collection successfully updated",
+                collectionInfo: updatedUserCollection
+            });
+        } else {
+            res.status(401).json({message: "No Collection / Collection could not be updated"})
+        }
     } catch(err) {
         res.status(500).json({
             message: "Unable to update collection",
@@ -103,7 +107,7 @@ router.delete('/delete-:userCollectionId', validateSession, async (req,res) => {
     if (rowsDestroyed >= 1) {
         res.status(200).json({message: `Successfully deleted collection`});
     } else {
-        res.status(404).json({message: "No collection to delete"})
+        res.status(404).json({message: "No Collection / Collection could not be deleted"})
     }
 } catch(err) {
     res.status(500).json({error: err})

@@ -70,7 +70,7 @@ router.post('/new', validateSession, async (req, res) => {
 
 //Edit an existing affirmation statement
 router.put('/edit-:affirmationId', validateSession, async (req,res) => {
-    const {statement} = req.body;
+    const {statement, collectionId, userCollectionId} = req.body;
     const {affirmationId} = req.params;
 
     const query = {
@@ -79,7 +79,7 @@ router.put('/edit-:affirmationId', validateSession, async (req,res) => {
         }
     }
 
-    const udpatedStatement = {statement}
+    const udpatedStatement = {statement, collectionId, userCollectionId}
 
     try {
         const update = await AffirmationModel.findOne({
@@ -89,14 +89,14 @@ router.put('/edit-:affirmationId', validateSession, async (req,res) => {
         });
 
         if (req.user.roleId >= update.ownerRole) {
-
             update.statement = udpatedStatement.statement;
+            update.collectionId = udpatedStatement.collectionId;
+            update.userCollectionId = udpatedStatement.userCollectionId;
             await update.save();
         } else {
             res.status(401).json({message: "Not authorized."});
         }
 
-        console.log(update)
         res.status(200).json({
             message: "Affirmation successfully updated",
             udpatedStatement

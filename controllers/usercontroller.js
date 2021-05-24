@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {UserModel, RoleModel} = require('../models');
+const {UserModel, RoleModel, UserCollectionModel, AffirmationModel} = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 const validateSession = require('../middleware/validate-session');
@@ -12,11 +12,18 @@ router.get('/', validateSession, async (req, res) => {
         const foundUser = await UserModel.findOne({
             where: {
                 id: userId
+            },
+            include: {
+                model: UserCollectionModel,
+                include: AffirmationModel
             }
         })
         res.status(200).json({
             "id": foundUser.id,
-            "roleId": foundUser.roleId
+            "roleId": foundUser.roleId,
+            "fName": foundUser.fName,
+            "lName": foundUser.lName,
+            "userCollectionInfo": foundUser.userCollections,
         })
     } catch(err) {
         res.status(500).json({message: "User could not be found"})

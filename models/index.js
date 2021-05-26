@@ -21,11 +21,11 @@ UserModel.belongsTo(RoleModel, {allowNull: false});
 UserModel.hasMany(UserCollectionModel, {allowNull: false});
 UserCollectionModel.belongsTo(UserModel, {allowNull: false})
 
-CategoryModel.hasMany(CollectionModel, {allowNull: false});
-CollectionModel.belongsTo(CategoryModel, {allowNull: false});
+CategoryModel.hasMany(CollectionModel, {allowNull: false, onDelete: 'CASCADE'});
+CollectionModel.belongsTo(CategoryModel, {allowNull: false, onDelete: 'CASCADE'});
 
-CollectionModel.hasMany(AffirmationModel, {allowNull: false});
-AffirmationModel.belongsTo(CollectionModel, {allowNull: true});
+CollectionModel.hasMany(AffirmationModel, {allowNull: false, onDelete: 'CASCADE'});
+AffirmationModel.belongsTo(CollectionModel, {allowNull: true, onDelete: 'CASCADE'});
 
 UserCollectionModel.hasMany(AffirmationModel, {allowNull: false});
 AffirmationModel.belongsTo(UserCollectionModel, {allowNull: true});

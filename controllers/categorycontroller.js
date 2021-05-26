@@ -27,6 +27,7 @@ router.get('/', async (req,res) => {
 //Working! - needs Admin Validation
 router.post('/new', validateSession, async (req, res) => {
     const {name} = req.body;
+    console.log(req, req.body)
 
     if(req.user.roleId == process.env.ADMIN_ROLE) {
         try {

@@ -26,3 +26,5 @@ dbConnection.authenticate()
     .catch((err) => {
         console.log(`[Server]: Server crashed due to ${err}`)
     });
+
+//That's a wrap!
